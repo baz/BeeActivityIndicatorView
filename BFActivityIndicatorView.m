@@ -22,6 +22,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	const CGFloat radius = frameSize.width / 2.f;
 	const CGFloat TWOPI = M_PI * 2.f;
 	const CGFloat numberOfTeeth = 12;
+	const CGFloat TWOPI = - M_PI * 2.f;
 	const CGFloat toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 2;
 
 	NSColor *toothColor = (style == BFActivityIndicatorViewStyleGray)? [NSColor grayColor] : [NSColor whiteColor];
