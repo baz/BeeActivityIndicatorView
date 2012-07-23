@@ -9,6 +9,8 @@
 #import "BFActivityIndicatorView.h"
 #import <QuartzCore/QuartzCore.h>
 
+static const CGFloat kNumberOfTeeth = 12;
+
 static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle style) {
 	if (style == BFActivityIndicatorViewStyleWhiteLarge) {
 		return CGSizeMake(37, 37);
@@ -20,8 +22,6 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSInteger frame, NSInteger numberOfFrames, CGFloat scale) {
 	const CGSize frameSize = BFActivityIndicatorViewStyleSize(style);
 	const CGFloat radius = frameSize.width / 2.f;
-	const CGFloat TWOPI = M_PI * 2.f;
-	const CGFloat numberOfTeeth = 12;
 	const CGFloat TWOPI = - M_PI * 2.f;
 	const CGFloat toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 2;
 
@@ -52,13 +52,13 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	CGContextRotateCTM(context, frame / (CGFloat)numberOfFrames * TWOPI);
 
 	// draw all the teeth
-	for (NSInteger toothNumber=0; toothNumber<numberOfTeeth; toothNumber++) {
+	for (NSInteger toothNumber=0; toothNumber<kNumberOfTeeth; toothNumber++) {
 		// set the correct color for the tooth, dividing by more than the number of teeth to prevent the last tooth from being too translucent
-		const CGFloat alpha = 0.3 + ((toothNumber / numberOfTeeth) * 0.7);
+		const CGFloat alpha = 0.3 + ((toothNumber / kNumberOfTeeth) * 0.7);
 		[[toothColor colorWithAlphaComponent:alpha] setFill];
 
 		// position and draw the tooth
-		CGContextRotateCTM(context, 1 / numberOfTeeth * TWOPI);
+		CGContextRotateCTM(context, 1 / kNumberOfTeeth * TWOPI);
 		NSRect rect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, ceilf(radius * .54f));
 		CGFloat radius = toothWidth / 2.f;
 		[[NSBezierPath bezierPathWithRoundedRect:rect xRadius:radius yRadius:radius] fill];
@@ -77,6 +77,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	frame.size = BFActivityIndicatorViewStyleSize(style);
 	
 	if ((self = [super initWithFrame:frame])) {
+		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
 		_animating = NO;
 		self.activityIndicatorViewStyle = style;
@@ -88,6 +89,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 - (id)initWithFrame:(CGRect)frame {
 	if ((self = [self initWithActivityIndicatorStyle:BFActivityIndicatorViewStyleWhite])) {
+		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
 		self.frame = frame;
 	}
@@ -152,7 +154,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)_startAnimation {
-	const NSInteger numberOfFrames = 12;
+	const NSInteger numberOfFrames = kNumberOfTeeth;
 	const CFTimeInterval animationDuration = 0.8;
 
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
@@ -164,7 +166,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
 	animation.calculationMode = kCAAnimationDiscrete;
 	animation.duration = animationDuration;
-	animation.repeatCount = HUGE_VALF;
+	animation.repeatCount = FLT_MAX;
 	animation.values = images;
 	animation.removedOnCompletion = NO;
 	animation.fillMode = kCAFillModeBoth;
@@ -182,9 +184,11 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 - (void)startAnimating {
 	@synchronized (self) {
-		_animating = YES;
-		self.hidden = NO;
-		[self performSelectorOnMainThread:@selector(_startAnimation) withObject:nil waitUntilDone:NO];
+		if (!_animating) {
+			_animating = YES;
+			self.hidden = NO;
+			[self performSelectorOnMainThread:@selector(_startAnimation) withObject:nil waitUntilDone:NO];
+		}
 	}
 }
 
