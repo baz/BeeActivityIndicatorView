@@ -19,13 +19,11 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSInteger frame, NSInteger numberOfFrames, CGFloat scale) {
+static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, CGFloat scale) {
 	const CGSize frameSize = BFActivityIndicatorViewStyleSize(style);
 	const CGFloat radius = frameSize.width / 2.f;
 	const CGFloat TWOPI = - M_PI * 2.f;
 	const CGFloat toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 2;
-
-	NSColor *toothColor = (style == BFActivityIndicatorViewStyleGray)? [NSColor grayColor] : [NSColor whiteColor];
 
 	NSRect offscreenRect = NSMakeRect(0.0, 0.0, frameSize.width, frameSize.height);
 	NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
@@ -55,7 +53,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	for (NSInteger toothNumber=0; toothNumber<kNumberOfTeeth; toothNumber++) {
 		// set the correct color for the tooth, dividing by more than the number of teeth to prevent the last tooth from being too translucent
 		const CGFloat alpha = 0.3 + ((toothNumber / kNumberOfTeeth) * 0.7);
-		[[toothColor colorWithAlphaComponent:alpha] setFill];
+		[[color colorWithAlphaComponent:alpha] setFill];
 
 		// position and draw the tooth
 		CGContextRotateCTM(context, 1 / kNumberOfTeeth * TWOPI);
@@ -71,6 +69,10 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 @implementation BFActivityIndicatorView
 
+@synthesize color = _color;
+@synthesize hidesWhenStopped = _hidesWhenStopped;
+@synthesize activityIndicatorViewStyle = _activityIndicatorViewStyle;
+
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style {
 	CGRect frame = CGRectZero;
@@ -79,9 +81,9 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	if ((self = [super initWithFrame:frame])) {
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
-		_animating = NO;
 		self.activityIndicatorViewStyle = style;
 		self.hidesWhenStopped = YES;
+		self.color = (style == BFActivityIndicatorViewStyleGray) ? [NSColor grayColor] : [NSColor whiteColor];
 	}
 
 	return self;
@@ -92,6 +94,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
 		self.frame = frame;
+		self.color = [NSColor whiteColor];
 	}
 
 	return self;
@@ -160,7 +163,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, frameNumber, numberOfFrames, 1.0))];
+		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, 1.0))];
 	}
 
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
@@ -220,7 +223,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		style = _activityIndicatorViewStyle;
 	}
 	
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(style, 0, 1, 1.0);
+	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(style, _color, 0, 1, 1.0);
 	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 	[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 }

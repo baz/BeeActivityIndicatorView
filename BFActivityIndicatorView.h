@@ -19,10 +19,12 @@ typedef enum {
 		BFActivityIndicatorViewStyle _activityIndicatorViewStyle;
 		BOOL _hidesWhenStopped;
 		BOOL _animating;
+		NSColor *_color;
 }
 
 @property (nonatomic, assign) BOOL hidesWhenStopped;
 @property (nonatomic, assign) BFActivityIndicatorViewStyle activityIndicatorViewStyle;
+@property (nonatomic, copy) NSColor *color;
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style;
 - (void)startAnimating;
