@@ -9,8 +9,6 @@
 #import "BFActivityIndicatorView.h"
 #import <QuartzCore/QuartzCore.h>
 
-static const CGFloat kNumberOfTeeth = 12;
-
 static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle style) {
 	if (style == BFActivityIndicatorViewStyleWhiteLarge) {
 		return CGSizeMake(37, 37);
@@ -19,11 +17,9 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, CGFloat scale) {
-	const CGSize frameSize = BFActivityIndicatorViewStyleSize(style);
+static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGFloat toothWidth, CGSize frameSize, CGFloat scale) {
 	const CGFloat radius = frameSize.width / 2.f;
 	const CGFloat TWOPI = - M_PI * 2.f;
-	const CGFloat toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 2;
 
 	NSRect offscreenRect = NSMakeRect(0.0, 0.0, frameSize.width, frameSize.height);
 	NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
@@ -50,13 +46,14 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	CGContextRotateCTM(context, frame / (CGFloat)numberOfFrames * TWOPI);
 
 	// draw all the teeth
-	for (NSInteger toothNumber=0; toothNumber<kNumberOfTeeth; toothNumber++) {
+	for (NSInteger toothNumber=0; toothNumber<numberOfTeeth; toothNumber++) {
+		CGFloat numTeeth = numberOfTeeth * 1.0;
 		// set the correct color for the tooth, dividing by more than the number of teeth to prevent the last tooth from being too translucent
-		const CGFloat alpha = 0.3 + ((toothNumber / kNumberOfTeeth) * 0.7);
+		const CGFloat alpha = 0.3 + ((toothNumber / numTeeth) * 0.7);
 		[[color colorWithAlphaComponent:alpha] setFill];
 
 		// position and draw the tooth
-		CGContextRotateCTM(context, 1 / kNumberOfTeeth * TWOPI);
+		CGContextRotateCTM(context, 1 / numTeeth * TWOPI);
 		NSRect rect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, ceilf(radius * .54f));
 		CGFloat radius = toothWidth / 2.f;
 		[[NSBezierPath bezierPathWithRoundedRect:rect xRadius:radius yRadius:radius] fill];
@@ -67,11 +64,11 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	return [offscreenRep CGImage];
 }
 
-@implementation BFActivityIndicatorView
+@interface BFActivityIndicatorView()
+	@property (assign) BOOL animating;
+@end
 
-@synthesize color = _color;
-@synthesize hidesWhenStopped = _hidesWhenStopped;
-@synthesize activityIndicatorViewStyle = _activityIndicatorViewStyle;
+@implementation BFActivityIndicatorView
 
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style {
@@ -84,6 +81,8 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		self.activityIndicatorViewStyle = style;
 		self.hidesWhenStopped = YES;
 		self.color = (style == BFActivityIndicatorViewStyleGray) ? [NSColor grayColor] : [NSColor whiteColor];
+		self.numberOfTeeth = 12;
+		self.toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 3;
 	}
 
 	return self;
@@ -95,75 +94,25 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		[self setWantsLayer:YES];
 		self.frame = frame;
 		self.color = [NSColor whiteColor];
+		self.numberOfTeeth = 12;
+		self.toothWidth = 3.5;
 	}
 
 	return self;
 }
 
 - (CGSize)sizeThatFits:(CGSize)aSize {
-	BFActivityIndicatorViewStyle style;
-
-	@synchronized (self) {
-		style = _activityIndicatorViewStyle;
-	}
-
-	return BFActivityIndicatorViewStyleSize(style);
-}
-
-- (void)setActivityIndicatorViewStyle:(BFActivityIndicatorViewStyle)style {
-	@synchronized (self) {
-		if (_activityIndicatorViewStyle != style) {
-			_activityIndicatorViewStyle = style;
-			[self setNeedsDisplay:YES];
-
-			if (_animating) {
-				// This will reset the images in the animation if it was already animating
-				[self startAnimating];
-			}
-		}
-	}
-}
-
-- (BFActivityIndicatorViewStyle)activityIndicatorViewStyle {
-	BFActivityIndicatorViewStyle style;
-
-	@synchronized (self) {
-		style = _activityIndicatorViewStyle;
-	}
-
-	return style;
-}
-
-- (void)setHidesWhenStopped:(BOOL)hides {
-	@synchronized (self) {
-		_hidesWhenStopped = hides;
-
-		if (_hidesWhenStopped) {
-			self.hidden = !_animating;
-		} else {
-			self.hidden = NO;
-		}
-	}
-}
-
-- (BOOL)hidesWhenStopped {
-	BOOL hides;
-
-	@synchronized (self) {
-		hides = _hidesWhenStopped;
-	}
-
-	return hides;
+	return BFActivityIndicatorViewStyleSize(self.activityIndicatorViewStyle);
 }
 
 - (void)_startAnimation {
-	const NSInteger numberOfFrames = kNumberOfTeeth;
+	const NSInteger numberOfFrames = self.numberOfTeeth;
 	const CFTimeInterval animationDuration = 0.8;
 
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, 1.0))];
+		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.toothWidth, self.frame.size, 1.0))];
 	}
 
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
@@ -186,13 +135,9 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)startAnimating {
-	@synchronized (self) {
-		if (!_animating) {
-			_animating = YES;
-			self.hidden = NO;
-			[self performSelectorOnMainThread:@selector(_startAnimation) withObject:nil waitUntilDone:NO];
-		}
-	}
+	_animating = YES;
+	self.hidden = NO;
+	[self _startAnimation];
 }
 
 - (BOOL)isFlipped {
@@ -200,30 +145,16 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)stopAnimating {
-	@synchronized (self) {
-		_animating = NO;
-		[self performSelectorOnMainThread:@selector(_stopAnimation) withObject:nil waitUntilDone:NO];
-	}
+	_animating = NO;
+	[self _stopAnimation];
 }
 
 - (BOOL)isAnimating {
-	BOOL animating;
-
-	@synchronized (self) {
-		animating = _animating;
-	}
-
-	return animating;
+	return _animating;
 }
 
 - (void)drawRect:(NSRect)rect {
-	BFActivityIndicatorViewStyle style;
-
-	@synchronized (self) {
-		style = _activityIndicatorViewStyle;
-	}
-	
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(style, _color, 0, 1, 1.0);
+	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(self.activityIndicatorViewStyle, self.color, 0, 1, self.numberOfTeeth, self.toothWidth, self.frame.size, 1.0);
 	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 	[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 }

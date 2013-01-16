@@ -14,17 +14,13 @@ typedef enum {
 	BFActivityIndicatorViewStyleGray,
 } BFActivityIndicatorViewStyle;
 
-@interface BFActivityIndicatorView : NSView {
-	@private
-		BFActivityIndicatorViewStyle _activityIndicatorViewStyle;
-		BOOL _hidesWhenStopped;
-		BOOL _animating;
-		NSColor *_color;
-}
+@interface BFActivityIndicatorView : NSView
 
-@property (nonatomic, assign) BOOL hidesWhenStopped;
-@property (nonatomic, assign) BFActivityIndicatorViewStyle activityIndicatorViewStyle;
-@property (nonatomic, copy) NSColor *color;
+@property (assign) BOOL hidesWhenStopped;
+@property (assign) BFActivityIndicatorViewStyle activityIndicatorViewStyle;
+@property (assign) NSUInteger numberOfTeeth;
+@property (assign) CGFloat toothWidth;
+@property (copy) NSColor *color;
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style;
 - (void)startAnimating;
