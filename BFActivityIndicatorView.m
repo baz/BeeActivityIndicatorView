@@ -17,7 +17,7 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGFloat toothWidth, CGSize frameSize, CGFloat scale) {
+static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGFloat toothWidth, CGFloat toothHeight, CGSize frameSize, CGFloat scale) {
 	const CGFloat radius = frameSize.width / 2.f;
 	const CGFloat TWOPI = - M_PI * 2.f;
 
@@ -54,7 +54,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 		// position and draw the tooth
 		CGContextRotateCTM(context, 1 / numTeeth * TWOPI);
-		NSRect rect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, ceilf(radius * .54f));
+		NSRect rect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, toothHeight ? toothHeight : ceilf(radius * .54f));
 		CGFloat radius = toothWidth / 2.f;
 		[[NSBezierPath bezierPathWithRoundedRect:rect xRadius:radius yRadius:radius] fill];
 	}
@@ -112,7 +112,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.toothWidth, self.frame.size, 1.0))];
+		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.toothWidth, self.toothHeight, self.frame.size, 1.0))];
 	}
 
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
@@ -154,7 +154,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)drawRect:(NSRect)rect {
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(self.activityIndicatorViewStyle, self.color, 0, 1, self.numberOfTeeth, self.toothWidth, self.frame.size, 1.0);
+	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(self.activityIndicatorViewStyle, self.color, 0, 1, self.numberOfTeeth, self.toothWidth, self.toothHeight, self.frame.size, 1.0);
 	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 	[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 }

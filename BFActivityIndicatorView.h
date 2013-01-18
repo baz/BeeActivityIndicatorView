@@ -20,6 +20,7 @@ typedef enum {
 @property (assign) BFActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (assign) NSUInteger numberOfTeeth;
 @property (assign) CGFloat toothWidth;
+@property (assign) CGFloat toothHeight;
 @property (copy) NSColor *color;
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style;
