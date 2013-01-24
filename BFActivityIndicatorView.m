@@ -83,6 +83,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		self.color = (style == BFActivityIndicatorViewStyleGray) ? [NSColor grayColor] : [NSColor whiteColor];
 		self.numberOfTeeth = 12;
 		self.toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 3;
+		self.animationDuration = 0.8;
 	}
 
 	return self;
@@ -96,6 +97,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		self.color = [NSColor whiteColor];
 		self.numberOfTeeth = 12;
 		self.toothWidth = 3.5;
+		self.animationDuration = 0.8;
 	}
 
 	return self;
@@ -107,7 +109,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 - (void)_startAnimation {
 	const NSInteger numberOfFrames = self.numberOfTeeth;
-	const CFTimeInterval animationDuration = 0.8;
+	const CFTimeInterval animationDuration = self.animationDuration;
 
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
