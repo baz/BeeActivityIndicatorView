@@ -21,6 +21,7 @@ typedef enum {
 @property (assign) NSUInteger numberOfTeeth;
 @property (assign) CGFloat toothWidth;
 @property (assign) CGFloat toothHeight;
+@property (assign) CGFloat toothCornerRadius;
 @property (assign) CGFloat animationDuration;
 @property (copy) NSColor *color;
 
