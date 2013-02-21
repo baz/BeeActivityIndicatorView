@@ -23,7 +23,13 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frame, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGSize frameSize, CGFloat scale, BFActivityIndicatorToothProperties toothProperties) {
+static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frameNumber, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGSize frameSize, CGFloat scale, BFActivityIndicatorToothProperties toothProperties) {
+	frameSize.width *= scale;
+	frameSize.height *= scale;
+	toothProperties.toothWidth *= scale;
+	toothProperties.toothHeight *= scale;
+	toothProperties.toothCornerRadius *= scale;
+
 	const CGFloat radius = frameSize.width / 2.f;
 	const CGFloat TWOPI = - M_PI * 2.f;
 
@@ -48,8 +54,8 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	// first put the origin in the center of the frame. this makes things easier later
 	CGContextTranslateCTM(context, radius, radius);
 
-	// now rotate the entire thing depending which frame we're trying to generate
-	CGContextRotateCTM(context, frame / (CGFloat)numberOfFrames * TWOPI);
+	// now rotate the entire thing depending which frameNumber we're trying to generate
+	CGContextRotateCTM(context, frameNumber / (CGFloat)numberOfFrames * TWOPI);
 
 	CGFloat toothWidth = toothProperties.toothWidth;
 	CGFloat toothHeight = toothProperties.toothHeight;
@@ -125,7 +131,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, 1.0, [self currentToothProperties]))];
+		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]))];
 	}
 
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
@@ -167,7 +173,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)drawRect:(NSRect)rect {
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, 0, 1, _numberOfTeeth, self.frame.size, 1.0, [self currentToothProperties]);
+	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
 	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 	[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 }
@@ -179,6 +185,10 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	};
 
 	return properties;
+}
+
+- (CGFloat)scale {
+	return [self.window.screen backingScaleFactor];
 }
 
 
