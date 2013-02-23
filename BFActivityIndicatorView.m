@@ -131,7 +131,8 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		[images addObject:(__bridge id) (BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]))];
+		CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]);
+		if (imageRef) [images addObject:(__bridge id) imageRef];
 	}
 
 	CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"contents"];
@@ -174,8 +175,10 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 - (void)drawRect:(NSRect)rect {
 	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
-	NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
-	[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+	if (imageRef) {
+		NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
+		[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
+	}
 }
 
 - (BFActivityIndicatorToothProperties)currentToothProperties {
