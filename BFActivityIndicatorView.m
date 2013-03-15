@@ -23,7 +23,14 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style, NSColor *color, NSInteger frameNumber, NSInteger numberOfFrames, NSUInteger numberOfTeeth, CGSize frameSize, CGFloat scale, BFActivityIndicatorToothProperties toothProperties) {
+static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style,
+													NSColor *color,
+													NSInteger frameNumber,
+													NSInteger numberOfFrames,
+													NSUInteger numberOfTeeth,
+													CGSize frameSize,
+													CGFloat scale,
+													BFActivityIndicatorToothProperties toothProperties) {
 	frameSize.width *= scale;
 	frameSize.height *= scale;
 	toothProperties.toothWidth *= scale;
@@ -34,7 +41,9 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	const CGFloat TWOPI = - M_PI * 2.f;
 
 	NSRect offscreenRect = NSMakeRect(0.0, 0.0, frameSize.width, frameSize.height);
-	NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:nil
+	if (NSEqualRects(offscreenRect, NSZeroRect)) return NULL;
+
+	NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
 																			 pixelsWide:offscreenRect.size.width
 																			 pixelsHigh:offscreenRect.size.height
 																		  bitsPerSample:8
@@ -42,12 +51,14 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 																			   hasAlpha:YES
 																			   isPlanar:NO
 																		 colorSpaceName:NSCalibratedRGBColorSpace
-																		   bitmapFormat:0
 																			bytesPerRow:(4 * offscreenRect.size.width)
 																		   bitsPerPixel:32];
- 
+
+	NSGraphicsContext *graphicsContext = [NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep];
+	if (!graphicsContext) return NULL;
+
 	[NSGraphicsContext saveGraphicsState];
-	[NSGraphicsContext setCurrentContext:[NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep]];
+	[NSGraphicsContext setCurrentContext:graphicsContext];
 
 	CGContextRef context = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 
@@ -74,6 +85,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 		[[NSBezierPath bezierPathWithRoundedRect:rect xRadius:toothCornerRadius yRadius:toothCornerRadius] fill];
 	}
 
+	[graphicsContext flushGraphics];
 	[NSGraphicsContext restoreGraphicsState];
 
 	return [offscreenRep CGImage];
