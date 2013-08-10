@@ -24,6 +24,7 @@ typedef enum {
 @property (assign) CGFloat toothCornerRadius;
 @property (assign) CGFloat animationDuration;
 @property (copy) NSColor *color;
+@property (copy) NSColor *strokeColor;
 
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style;
 - (void)startAnimating;

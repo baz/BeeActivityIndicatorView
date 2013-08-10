@@ -25,6 +25,7 @@ static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle styl
 
 static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style,
 													NSColor *color,
+													NSColor *strokeColor,
 													NSInteger frameNumber,
 													NSInteger numberOfFrames,
 													NSUInteger numberOfTeeth,
@@ -62,27 +63,39 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 
 	CGContextRef context = (CGContextRef) [[NSGraphicsContext currentContext] graphicsPort];
 
-	// first put the origin in the center of the frame. this makes things easier later
+	// First put the origin in the center of the frame. this makes things easier later
 	CGContextTranslateCTM(context, radius, radius);
 
-	// now rotate the entire thing depending which frameNumber we're trying to generate
+	// Now rotate the entire thing depending which frameNumber we're trying to generate
 	CGContextRotateCTM(context, frameNumber / (CGFloat)numberOfFrames * TWOPI);
 
 	CGFloat toothWidth = toothProperties.toothWidth;
 	CGFloat toothHeight = toothProperties.toothHeight;
 	CGFloat toothCornerRadius = toothProperties.toothCornerRadius;
 
-	// draw all the teeth
+	// Draw all the teeth
 	for (NSInteger toothNumber=0; toothNumber<numberOfTeeth; toothNumber++) {
 		CGFloat numTeeth = numberOfTeeth * 1.0;
-		// set the correct color for the tooth, dividing by more than the number of teeth to prevent the last tooth from being too translucent
-		const CGFloat alpha = 0.3 + ((toothNumber / numTeeth) * 0.7);
-		[[color colorWithAlphaComponent:alpha] setFill];
 
-		// position and draw the tooth
+		// Set the correct color for the tooth, dividing by more than the number of teeth to prevent the last tooth from being too translucent
+		const CGFloat alpha = 0.3 + ((toothNumber / numTeeth) * 0.7);
+
+		// Position and draw the tooth
 		CGContextRotateCTM(context, 1 / numTeeth * TWOPI);
-		NSRect rect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, toothHeight ? toothHeight : ceilf(radius * .54f));
-		[[NSBezierPath bezierPathWithRoundedRect:rect xRadius:toothCornerRadius yRadius:toothCornerRadius] fill];
+
+		NSRect innerRect = NSMakeRect(-toothWidth / 2.f, -radius, toothWidth, toothHeight ? toothHeight : ceilf(radius * .54f));
+
+		// First the stroke if provided
+		if (strokeColor) {
+			const CGFloat outset = 0.75;
+			[[strokeColor colorWithAlphaComponent:alpha] setFill];
+			NSRect outerRect = NSInsetRect(innerRect, -outset, -outset);
+			[[NSBezierPath bezierPathWithRoundedRect:outerRect xRadius:toothCornerRadius - 1 yRadius:toothCornerRadius - 1] fill];
+		}
+
+		// Inner tooth
+		[[color colorWithAlphaComponent:alpha] setFill];
+		[[NSBezierPath bezierPathWithRoundedRect:innerRect xRadius:toothCornerRadius yRadius:toothCornerRadius] fill];
 	}
 
 	[graphicsContext flushGraphics];
@@ -101,7 +114,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 - (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style {
 	CGRect frame = CGRectZero;
 	frame.size = BFActivityIndicatorViewStyleSize(style);
-	
+
 	if ((self = [super initWithFrame:frame])) {
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
@@ -143,7 +156,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]);
+		CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]);
 		if (imageRef) [images addObject:(__bridge id) imageRef];
 	}
 
@@ -186,7 +199,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)drawRect:(NSRect)rect {
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
+	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
 	if (imageRef) {
 		NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 		[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
