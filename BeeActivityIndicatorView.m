@@ -1,29 +1,29 @@
 //
-//	BFActivityIndicatorView.m
+//	BeeActivityIndicatorView.m
 //
 //	Created by Basil Shkara on 17/07/12.
 //	Copyright (c) 2012 Neat.io. All rights reserved.
 //
 //  Port of UIActivityIndicatorView from the Chameleon project: https://github.com/BigZaphod/Chameleon
 
-#import "BFActivityIndicatorView.h"
+#import "BeeActivityIndicatorView.h"
 #import <QuartzCore/QuartzCore.h>
 
 typedef struct {
 	CGFloat toothWidth;
 	CGFloat toothHeight;
 	CGFloat toothCornerRadius;
-} BFActivityIndicatorToothProperties;
+} BeeActivityIndicatorToothProperties;
 
-static CGSize BFActivityIndicatorViewStyleSize(BFActivityIndicatorViewStyle style) {
-	if (style == BFActivityIndicatorViewStyleWhiteLarge) {
+static CGSize BeeActivityIndicatorViewStyleSize(BeeActivityIndicatorViewStyle style) {
+	if (style == BeeActivityIndicatorViewStyleWhiteLarge) {
 		return CGSizeMake(37, 37);
 	} else {
 		return CGSizeMake(20, 20);
 	}
 }
 
-static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle style,
+static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewStyle style,
 													NSColor *color,
 													NSColor *strokeColor,
 													NSInteger frameNumber,
@@ -31,7 +31,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 													NSUInteger numberOfTeeth,
 													CGSize frameSize,
 													CGFloat scale,
-													BFActivityIndicatorToothProperties toothProperties) {
+													BeeActivityIndicatorToothProperties toothProperties) {
 	frameSize.width *= scale;
 	frameSize.height *= scale;
 	toothProperties.toothWidth *= scale;
@@ -104,25 +104,25 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	return [offscreenRep CGImage];
 }
 
-@interface BFActivityIndicatorView()
+@interface BeeActivityIndicatorView()
 	@property (assign) BOOL animating;
 @end
 
-@implementation BFActivityIndicatorView
+@implementation BeeActivityIndicatorView
 
 
-- (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style {
+- (id)initWithActivityIndicatorStyle:(BeeActivityIndicatorViewStyle)style {
 	CGRect frame = CGRectZero;
-	frame.size = BFActivityIndicatorViewStyleSize(style);
+	frame.size = BeeActivityIndicatorViewStyleSize(style);
 
 	if ((self = [super initWithFrame:frame])) {
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
 		self.activityIndicatorViewStyle = style;
 		self.hidesWhenStopped = YES;
-		self.color = (style == BFActivityIndicatorViewStyleGray) ? [NSColor grayColor] : [NSColor whiteColor];
+		self.color = (style == BeeActivityIndicatorViewStyleGray) ? [NSColor grayColor] : [NSColor whiteColor];
 		self.numberOfTeeth = 12;
-		self.toothWidth = (style == BFActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 3;
+		self.toothWidth = (style == BeeActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 3;
 		self.toothCornerRadius = self.toothWidth / 2.f;
 		self.animationDuration = 0.8;
 	}
@@ -131,7 +131,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (id)initWithFrame:(CGRect)frame {
-	if ((self = [self initWithActivityIndicatorStyle:BFActivityIndicatorViewStyleWhite])) {
+	if ((self = [self initWithActivityIndicatorStyle:BeeActivityIndicatorViewStyleWhite])) {
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
 		self.frame = frame;
@@ -146,7 +146,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (CGSize)sizeThatFits:(CGSize)aSize {
-	return BFActivityIndicatorViewStyleSize(self.activityIndicatorViewStyle);
+	return BeeActivityIndicatorViewStyleSize(self.activityIndicatorViewStyle);
 }
 
 - (void)_startAnimation {
@@ -156,7 +156,7 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 	NSMutableArray *images = [[NSMutableArray alloc] initWithCapacity:numberOfFrames];
 
 	for (NSInteger frameNumber=0; frameNumber<numberOfFrames; frameNumber++) {
-		CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]);
+		CGImageRef imageRef = BeeActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, frameNumber, numberOfFrames, numberOfFrames, self.frame.size, [self scale], [self currentToothProperties]);
 		if (imageRef) [images addObject:(__bridge id) imageRef];
 	}
 
@@ -199,15 +199,15 @@ static CGImageRef BFActivityIndicatorViewFrameImage(BFActivityIndicatorViewStyle
 }
 
 - (void)drawRect:(NSRect)rect {
-	CGImageRef imageRef = BFActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
+	CGImageRef imageRef = BeeActivityIndicatorViewFrameImage(_activityIndicatorViewStyle, _color, _strokeColor, 0, 1, _numberOfTeeth, self.frame.size, [self scale], [self currentToothProperties]);
 	if (imageRef) {
 		NSImage *image = [[NSImage alloc] initWithCGImage:imageRef size:self.bounds.size];
 		[image drawInRect:self.bounds fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0];
 	}
 }
 
-- (BFActivityIndicatorToothProperties)currentToothProperties {
-	BFActivityIndicatorToothProperties properties = {.toothWidth = self.toothWidth,
+- (BeeActivityIndicatorToothProperties)currentToothProperties {
+	BeeActivityIndicatorToothProperties properties = {.toothWidth = self.toothWidth,
 		.toothHeight = self.toothHeight,
 		.toothCornerRadius = self.toothCornerRadius
 	};

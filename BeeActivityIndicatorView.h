@@ -1,5 +1,5 @@
 //
-//	BFActivityIndicatorView.h
+//	BeeActivityIndicatorView.h
 //
 //	Created by Basil Shkara on 17/07/12.
 //	Copyright (c) 2012 Neat.io. All rights reserved.
@@ -9,15 +9,15 @@
 #import <Cocoa/Cocoa.h>
 
 typedef enum {
-	BFActivityIndicatorViewStyleWhiteLarge,
-	BFActivityIndicatorViewStyleWhite,
-	BFActivityIndicatorViewStyleGray,
-} BFActivityIndicatorViewStyle;
+	BeeActivityIndicatorViewStyleWhiteLarge,
+	BeeActivityIndicatorViewStyleWhite,
+	BeeActivityIndicatorViewStyleGray,
+} BeeActivityIndicatorViewStyle;
 
-@interface BFActivityIndicatorView : NSView
+@interface BeeActivityIndicatorView : NSView
 
 @property (assign) BOOL hidesWhenStopped;
-@property (assign) BFActivityIndicatorViewStyle activityIndicatorViewStyle;
+@property (assign) BeeActivityIndicatorViewStyle activityIndicatorViewStyle;
 @property (assign) NSUInteger numberOfTeeth;
 @property (assign) CGFloat toothWidth;
 @property (assign) CGFloat toothHeight;
@@ -26,7 +26,7 @@ typedef enum {
 @property (copy) NSColor *color;
 @property (copy) NSColor *strokeColor;
 
-- (id)initWithActivityIndicatorStyle:(BFActivityIndicatorViewStyle)style;
+- (id)initWithActivityIndicatorStyle:(BeeActivityIndicatorViewStyle)style;
 - (void)startAnimating;
 - (void)stopAnimating;
 - (BOOL)isAnimating;
