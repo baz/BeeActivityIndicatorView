@@ -15,11 +15,11 @@ typedef struct {
 	CGFloat toothCornerRadius;
 } BeeActivityIndicatorToothProperties;
 
-static CGSize BeeActivityIndicatorViewStyleSize(BeeActivityIndicatorViewStyle style) {
+static NSSize BeeActivityIndicatorViewStyleSize(BeeActivityIndicatorViewStyle style) {
 	if (style == BeeActivityIndicatorViewStyleWhiteLarge) {
-		return CGSizeMake(37, 37);
+		return NSMakeSize(37, 37);
 	} else {
-		return CGSizeMake(20, 20);
+		return NSMakeSize(20, 20);
 	}
 }
 
@@ -29,7 +29,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 													NSInteger frameNumber,
 													NSInteger numberOfFrames,
 													NSUInteger numberOfTeeth,
-													CGSize frameSize,
+													NSSize frameSize,
 													CGFloat scale,
 													BeeActivityIndicatorToothProperties toothProperties) {
 	frameSize.width *= scale;
@@ -112,7 +112,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 
 
 - (id)initWithActivityIndicatorStyle:(BeeActivityIndicatorViewStyle)style {
-	CGRect frame = CGRectZero;
+	NSRect frame = NSZeroRect;
 	frame.size = BeeActivityIndicatorViewStyleSize(style);
 
 	if ((self = [super initWithFrame:frame])) {
@@ -130,7 +130,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 	return self;
 }
 
-- (id)initWithFrame:(CGRect)frame {
+- (id)initWithFrame:(NSRect)frame {
 	if ((self = [self initWithActivityIndicatorStyle:BeeActivityIndicatorViewStyleWhite])) {
 		self.layer = [CALayer layer];
 		[self setWantsLayer:YES];
@@ -145,7 +145,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 	return self;
 }
 
-- (CGSize)sizeThatFits:(CGSize)aSize {
+- (NSSize)sizeThatFits:(NSSize)aSize {
 	return BeeActivityIndicatorViewStyleSize(self.activityIndicatorViewStyle);
 }
 
@@ -180,6 +180,8 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 }
 
 - (void)startAnimating {
+	[self.layer removeAnimationForKey:@"contents"];
+
 	_animating = YES;
 	self.hidden = NO;
 	[self _startAnimation];
@@ -216,7 +218,13 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 }
 
 - (CGFloat)scale {
-	return [self.window.screen backingScaleFactor];
+	CGFloat scale = [self.window.screen backingScaleFactor];
+
+	return scale ? scale : 2.0;
+}
+
+- (void)viewDidChangeBackingProperties {
+	if ([self isAnimating]) [self _startAnimation];
 }
 
 
