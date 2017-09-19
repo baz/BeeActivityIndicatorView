@@ -106,6 +106,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 
 @interface BeeActivityIndicatorView()
 	@property (assign) BOOL animating;
+	@property (nonatomic, strong) CALayer *activityLayer;
 @end
 
 @implementation BeeActivityIndicatorView
@@ -125,6 +126,10 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 		self.toothWidth = (style == BeeActivityIndicatorViewStyleWhiteLarge) ? 3.5 : 3;
 		self.toothCornerRadius = self.toothWidth / 2.f;
 		self.animationDuration = 0.8;
+
+		CALayer *activityLayer = [CALayer layer];
+		[self.layer addSublayer:activityLayer];
+		self.activityLayer = activityLayer;
 	}
 
 	return self;
@@ -140,6 +145,10 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 		self.toothWidth = 3.5;
 		self.toothCornerRadius = self.toothWidth / 2.f;
 		self.animationDuration = 0.8;
+
+		CALayer *activityLayer = [CALayer layer];
+		[self.layer addSublayer:activityLayer];
+		self.activityLayer = activityLayer;
 	}
 
 	return self;
@@ -168,11 +177,11 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 	animation.removedOnCompletion = NO;
 	animation.fillMode = kCAFillModeBoth;
 
-	[self.layer addAnimation:animation forKey:@"contents"];
+	[self.activityLayer addAnimation:animation forKey:@"contents"];
 }
 
 - (void)_stopAnimation {
-	[self.layer removeAnimationForKey:@"contents"];
+	[self.activityLayer removeAnimationForKey:@"contents"];
 
 	if (self.hidesWhenStopped) {
 		self.hidden = YES;
@@ -180,7 +189,7 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 }
 
 - (void)startAnimating {
-	[self.layer removeAnimationForKey:@"contents"];
+	[self.activityLayer removeAnimationForKey:@"contents"];
 
 	_animating = YES;
 	self.hidden = NO;
@@ -225,6 +234,12 @@ static CGImageRef BeeActivityIndicatorViewFrameImage(BeeActivityIndicatorViewSty
 
 - (void)viewDidChangeBackingProperties {
 	if ([self isAnimating]) [self _startAnimation];
+}
+
+- (void)setFrame:(NSRect)frame {
+	[super setFrame:frame];
+
+	self.activityLayer.frame = self.bounds;
 }
 
 

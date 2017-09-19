@@ -25,6 +25,7 @@ typedef enum {
 @property (assign) CGFloat animationDuration;
 @property (copy) NSColor *color;
 @property (copy) NSColor *strokeColor;
+@property (nonatomic, strong, readonly) CALayer *activityLayer;
 
 - (id)initWithActivityIndicatorStyle:(BeeActivityIndicatorViewStyle)style;
 - (void)startAnimating;
